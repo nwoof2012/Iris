@@ -97,7 +97,7 @@ public class PackRenderTargetDirectives {
 		renderTargetSettings.forEach((index, settings) -> {
 			acceptBufferDirectives(directives, settings, "colortex" + index);
 
-			if (index < LEGACY_RENDER_TARGETS.size()) {
+			if (index < LEGACY_RENDER_TARGETS.size() && !Iris.isCompliantOrHigher(1)) {
 				acceptBufferDirectives(directives, settings, LEGACY_RENDER_TARGETS.get(index));
 			}
 		});

@@ -187,8 +187,10 @@ public class PackShadowDirectives {
 		directives.acceptCommentIntDirective("SHADOWRES", resolution -> this.resolution = resolution);
 		directives.acceptConstIntDirective("shadowMapResolution", resolution -> this.resolution = resolution);
 
-		directives.acceptCommentFloatDirective("SHADOWFOV", fov -> this.fov = fov);
-		directives.acceptConstFloatDirective("shadowMapFov", fov -> this.fov = fov);
+		if (!Iris.isCompliantOrHigher(1)) {
+			directives.acceptCommentFloatDirective("SHADOWFOV", fov -> this.fov = fov);
+			directives.acceptConstFloatDirective("shadowMapFov", fov -> this.fov = fov);
+		}
 
 		directives.acceptCommentFloatDirective("SHADOWHPL", distance -> this.distance = distance);
 		directives.acceptConstFloatDirective("shadowDistance", distance -> this.distance = distance);

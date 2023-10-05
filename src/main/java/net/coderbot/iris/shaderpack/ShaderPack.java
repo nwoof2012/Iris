@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.coderbot.iris.Iris;
 import net.coderbot.iris.colorspace.ColorSpace;
+import net.coderbot.iris.compliance.ComplianceVersion;
 import net.coderbot.iris.features.FeatureFlags;
 import net.coderbot.iris.gui.FeatureMissingErrorScreen;
 import net.coderbot.iris.gui.screen.ShaderPackScreen;
@@ -82,6 +83,7 @@ public class ShaderPack {
 	private final Set<FeatureFlags> activeFeatures;
 	private final Function<AbsolutePackPath, String> sourceProvider;
 	private final ShaderProperties shaderProperties;
+	private ComplianceVersion complianceLevel;
 	private List<String> dimensionIds;
 	private Map<NamespacedId, String> dimensionMap;
 
@@ -162,10 +164,11 @@ public class ShaderPack {
 		// Discover, merge, and apply shader pack options
 		this.shaderPackOptions = new ShaderPackOptions(graph, changedConfigs);
 		graph = this.shaderPackOptions.getIncludes();
+		complianceLevel = ComplianceVersion.NO_COMPLIANCE;
 
 		Iterable<StringPair> finalEnvironmentDefines = environmentDefines;
 		this.shaderProperties = loadProperties(root, "shaders.properties")
-				.map(source -> new ShaderProperties(source, shaderPackOptions, finalEnvironmentDefines))
+				.map(source -> new ShaderProperties(source, shaderPackOptions, finalEnvironmentDefines, this))
 				.orElseGet(ShaderProperties::empty);
 
 		activeFeatures = new HashSet<>();
@@ -594,4 +597,12 @@ public class ShaderPack {
     public boolean hasFeature(FeatureFlags feature) {
 		return activeFeatures.contains(feature);
     }
+
+	public ComplianceVersion getComplianceLevel() {
+		return complianceLevel;
+	}
+
+	protected void setComplianceLevel(String value) {
+		this.complianceLevel = ComplianceVersion.getComplianceLevel(value);
+	}
 }

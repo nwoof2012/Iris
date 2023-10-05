@@ -152,6 +152,7 @@ public class CompatibilityTransformer {
 		// find the reference expressions for the const parameters
 		// and check that they are in the right function and are of the right type
 		boolean constDeclarationHit = false;
+		StringBuilder error = null;
 		Deque<String> processingQueue = new ArrayDeque<>(processingSet);
 		while (!processingQueue.isEmpty()) {
 			String name = processingQueue.poll();
@@ -187,6 +188,13 @@ public class CompatibilityTransformer {
 						qualifier.detachAndDelete();
 					}
 					constDeclarationHit = true;
+					if (Iris.isCompliantOrHigher(1)) {
+						if (error == null) {
+							error = new StringBuilder("Errors found: \n");
+						}
+						error.append(" - ").append(name).append(" is initialized with a const parameter, but this use case for it is illegal.\n");
+						continue;
+					}
 
 					// add all members of the declaration to the list of const parameters to process
 					for (DeclarationMember member : taid.getMembers()) {
@@ -209,7 +217,7 @@ public class CompatibilityTransformer {
 			}
 		}
 
-		if (constDeclarationHit) {
+		if (constDeclarationHit && !Iris.isCompliantOrHigher(1)) {
 			LOGGER.warn(
 					"Removed the const keyword from declarations that use const parameters. See debugging.md for more information.");
 		}
@@ -230,6 +238,13 @@ public class CompatibilityTransformer {
 					id -> !(id.getParent() instanceof FunctionCallExpression)
 							&& !(id.getParent() instanceof FunctionPrototype)),
 					id -> id.setName(newName))) {
+				if (Iris.isCompliantOrHigher(1)) {
+					if (error == null) {
+						error = new StringBuilder("Errors found: \n");
+					}
+					error.append(" A reserved word ").append(reservedWord).append(" is used.\n");
+					continue;
+				}
 				LOGGER.warn("Renamed reserved word \"" + reservedWord + "\" to \"" + newName + "\".");
 			}
 		}
@@ -265,11 +280,24 @@ public class CompatibilityTransformer {
 				reusedOriginal = true;
 			}
 
+			if (Iris.isCompliantOrHigher(1)) {
+				if (error == null) {
+					error = new StringBuilder("Errors found: \n");
+				}
+				error.append("Found an unsized array specifier (of the form []), please move it from the type to each of the the declaration member(s) ").append(structMember.getDeclarators().stream().map(StructDeclarator::getName).map(Identifier::getName)
+                        .collect(Collectors.joining(", ")));
+				continue;
+			}
+
 			LOGGER.warn(
 					"Moved unsized array specifier (of the form []) from the type to each of the the declaration member(s) "
 							+ structMember.getDeclarators().stream().map(StructDeclarator::getName).map(Identifier::getName)
 									.collect(Collectors.joining(", "))
 							+ ". See debugging.md for more information.");
+		}
+
+		if (error != null) {
+			throw new TransformationException(error.toString());
 		}
 	}
 

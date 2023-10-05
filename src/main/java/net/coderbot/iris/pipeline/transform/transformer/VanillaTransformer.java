@@ -4,6 +4,7 @@ import io.github.douira.glsl_transformer.ast.node.TranslationUnit;
 import io.github.douira.glsl_transformer.ast.query.Root;
 import io.github.douira.glsl_transformer.ast.transform.ASTInjectionPoint;
 import io.github.douira.glsl_transformer.ast.transform.ASTParser;
+import net.coderbot.iris.Iris;
 import net.coderbot.iris.gl.shader.ShaderType;
 import net.coderbot.iris.pipeline.newshader.AlphaTests;
 import net.coderbot.iris.pipeline.transform.PatchShaderType;
@@ -51,12 +52,14 @@ public class VanillaTransformer {
 						"vec4(240.0, 240.0, 0.0, 1.0)");
 			}
 
-			AttributeTransformer.patchMultiTexCoord3(t, tree, root, parameters);
+			if (!Iris.isCompliantOrHigher(1)) {
+				AttributeTransformer.patchMultiTexCoord3(t, tree, root, parameters);
 
-			// gl_MultiTexCoord0 and gl_MultiTexCoord1 are the only valid inputs (with
-			// gl_MultiTexCoord2 and gl_MultiTexCoord3 as aliases), other texture
-			// coordinates are not valid inputs.
-			CommonTransformer.replaceGlMultiTexCoordBounded(t, root, 4, 7);
+				// gl_MultiTexCoord0 and gl_MultiTexCoord1 are the only valid inputs (with
+				// gl_MultiTexCoord2 and gl_MultiTexCoord3 as aliases), other texture
+				// coordinates are not valid inputs.
+				CommonTransformer.replaceGlMultiTexCoordBounded(t, root, 4, 7);
+			}
 		}
 
 		tree.parseAndInjectNode(t, ASTInjectionPoint.BEFORE_DECLARATIONS,

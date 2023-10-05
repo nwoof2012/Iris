@@ -282,7 +282,7 @@ public class PackDirectives {
 
 		Vector2i scale = new Vector2i();
 
-		if (index < PackRenderTargetDirectives.LEGACY_RENDER_TARGETS.size()) {
+		if (index < PackRenderTargetDirectives.LEGACY_RENDER_TARGETS.size() && !Iris.isCompliantOrHigher(1)) {
 			String legacyName = PackRenderTargetDirectives.LEGACY_RENDER_TARGETS.get(index);
 
 			if (scaleOverrides.containsKey(legacyName)) {

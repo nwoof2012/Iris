@@ -111,7 +111,7 @@ public class ShaderProperties {
 	}
 
 	// TODO: Is there a better solution than having ShaderPack pass a root path to ShaderProperties to be able to read textures?
-	public ShaderProperties(String contents, ShaderPackOptions shaderPackOptions, Iterable<StringPair> environmentDefines) {
+	public ShaderProperties(String contents, ShaderPackOptions shaderPackOptions, Iterable<StringPair> environmentDefines, ShaderPack pack) {
 		String preprocessedContents = PropertiesPreprocessor.preprocessSource(contents, shaderPackOptions, environmentDefines);
 
 		Properties preprocessed = new OrderBackedProperties();
@@ -154,6 +154,10 @@ public class ShaderProperties {
 				} else {
 					Iris.logger.error("Unrecognized shadow culling setting: " + value);
 				}
+			}
+
+			if ("compliance".equals(key)) {
+				pack.setComplianceLevel(value);
 			}
 
 			handleBooleanDirective(key, value, "oldHandLight", bool -> oldHandLight = bool);

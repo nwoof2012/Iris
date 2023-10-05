@@ -105,7 +105,7 @@ public class ProgramDirectives {
 
 			directiveHolder.acceptConstBooleanDirective("colortex" + index + "MipmapEnabled", mipmapHandler);
 
-			if (index < LEGACY_RENDER_TARGETS.size()) {
+			if (index < LEGACY_RENDER_TARGETS.size() && !Iris.isCompliantOrHigher(1)) {
 				directiveHolder.acceptConstBooleanDirective(LEGACY_RENDER_TARGETS.get(index) + "MipmapEnabled", mipmapHandler);
 			}
 		});

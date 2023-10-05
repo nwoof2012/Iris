@@ -3,6 +3,7 @@ package net.coderbot.iris.samplers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import net.coderbot.iris.Iris;
 import net.coderbot.iris.gbuffer_overrides.matching.InputAvailability;
 import net.coderbot.iris.gl.IrisRenderSystem;
 import net.coderbot.iris.gl.image.GlImage;
@@ -75,7 +76,7 @@ public class IrisSamplers {
 
 			// TODO: How do custom textures interact with aliases?
 
-			if (i < PackRenderTargetDirectives.LEGACY_RENDER_TARGETS.size()) {
+			if (i < PackRenderTargetDirectives.LEGACY_RENDER_TARGETS.size() && !Iris.isCompliantOrHigher(1)) {
 				String legacyName = PackRenderTargetDirectives.LEGACY_RENDER_TARGETS.get(i);
 
 				// colortex0 is the default sampler in fullscreen passes

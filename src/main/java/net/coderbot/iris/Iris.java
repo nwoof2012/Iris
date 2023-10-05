@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.mojang.blaze3d.platform.GlDebug;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.coderbot.iris.compat.sodium.SodiumVersionCheck;
+import net.coderbot.iris.compliance.ComplianceVersion;
 import net.coderbot.iris.config.IrisConfig;
 import net.coderbot.iris.gl.GLDebug;
 import net.coderbot.iris.gl.shader.StandardMacros;
@@ -223,6 +224,10 @@ public class Iris {
 		// See: https://github.com/IrisShaders/Iris/issues/323
 		lastDimension = DimensionId.OVERWORLD;
 		Iris.getPipelineManager().preparePipeline(DimensionId.OVERWORLD);
+	}
+
+	public static boolean isCompliantOrHigher(int i) {
+		return getCurrentPack().map(ShaderPack::getComplianceLevel).map(ComplianceVersion::getInternalComplianceLevel).orElse(0) >= i;
 	}
 
 	public static void handleKeybinds(Minecraft minecraft) {
