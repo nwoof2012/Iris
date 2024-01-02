@@ -76,6 +76,8 @@ public class IrisVertexFormats {
 		ENTITY = new VertexFormat(entityElements.build());
 		GLYPH = new VertexFormat(glyphElements.build());
 		CLOUDS = new VertexFormat(cloudsElements.build());
+
+		debug(ENTITY);
 	}
 
 	private static void debug(VertexFormat format) {

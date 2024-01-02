@@ -2,14 +2,14 @@ package net.coderbot.iris.compat.sodium.mixin.copyEntity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import me.jellysquid.mods.sodium.client.model.ModelCuboidAccessor;
-import me.jellysquid.mods.sodium.client.render.immediate.model.EntityRenderer;
-import me.jellysquid.mods.sodium.client.render.immediate.model.ModelCuboid;
-import me.jellysquid.mods.sodium.client.render.immediate.model.ModelPartData;
 import me.jellysquid.mods.sodium.client.render.vertex.VertexConsumerUtils;
 import net.caffeinemc.mods.sodium.api.math.MatrixHelper;
 import net.caffeinemc.mods.sodium.api.util.ColorABGR;
 import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
+import net.coderbot.iris.compat.sodium.impl.vertex_format.entity_xhfp.IrisEntityRenderer;
+import net.coderbot.iris.compat.sodium.impl.vertex_format.entity_xhfp.IrisModelCuboid;
+import net.coderbot.iris.compat.sodium.impl.vertex_format.entity_xhfp.IrisModelCuboidAccessor;
+import net.coderbot.iris.compat.sodium.impl.vertex_format.entity_xhfp.IrisModelPartData;
 import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(ModelPart.class)
-public class ModelPartMixin implements ModelPartData {
+public class ModelPartMixin implements IrisModelPartData {
 	@Shadow
 	public float x;
 	@Shadow
@@ -59,22 +59,22 @@ public class ModelPartMixin implements ModelPartData {
 	private Map<String, ModelPart> children;
 
 	@Unique
-	private ModelPart[] sodium$children;
+	private ModelPart[] iris$children;
 
 	@Unique
-	private ModelCuboid[] sodium$cuboids;
+	private IrisModelCuboid[] iris$cuboids;
 
 	@Inject(method = "<init>", at = @At("RETURN"))
 	private void onInit(List<ModelPart.Cube> cuboids, Map<String, ModelPart> children, CallbackInfo ci) {
-		var copies = new ModelCuboid[cuboids.size()];
+		var copies = new IrisModelCuboid[cuboids.size()];
 
 		for (int i = 0; i < cuboids.size(); i++) {
-			var accessor = (ModelCuboidAccessor) cuboids.get(i);
-			copies[i] = accessor.sodium$copy();
+			var accessor = (IrisModelCuboidAccessor) cuboids.get(i);
+			copies[i] = accessor.iris$copy();
 		}
 
-		this.sodium$cuboids = copies;
-		this.sodium$children = children.values()
+		this.iris$cuboids = copies;
+		this.iris$children = children.values()
 			.toArray(ModelPart[]::new);
 
 		// Try to catch errors caused by mods touching the collections after we've copied everything.
@@ -92,7 +92,7 @@ public class ModelPartMixin implements ModelPartData {
 
 		ci.cancel();
 
-		EntityRenderer.render(matrices, writer, (ModelPart) (Object) this, light, overlay, ColorABGR.pack(red, green, blue, alpha));
+		IrisEntityRenderer.render(matrices, writer, (ModelPart) (Object) this, light, overlay, ColorABGR.pack(red, green, blue, alpha));
 	}
 
 	/**
@@ -115,8 +115,8 @@ public class ModelPartMixin implements ModelPartData {
 	}
 
 	@Override
-	public ModelCuboid[] getCuboids() {
-		return this.sodium$cuboids;
+	public IrisModelCuboid[] getCuboids() {
+		return this.iris$cuboids;
 	}
 
 	@Override
@@ -131,6 +131,6 @@ public class ModelPartMixin implements ModelPartData {
 
 	@Override
 	public ModelPart[] getChildren() {
-		return this.sodium$children;
+		return this.iris$children;
 	}
 }
