@@ -42,7 +42,7 @@ public class MixinLevelRenderer_SunMoonToggle {
 			from = @At(value = "FIELD", target = "net/minecraft/client/renderer/LevelRenderer.SUN_LOCATION : Lnet/minecraft/resources/ResourceLocation;"),
 			to = @At(value = "FIELD", target = "net/minecraft/client/renderer/LevelRenderer.MOON_LOCATION : Lnet/minecraft/resources/ResourceLocation;")),
 		allow = 1)
-	private void iris$beforeDrawSun(PoseStack arg, Matrix4f arg2, float f, Camera arg3, boolean bl, Runnable runnable, CallbackInfo ci) {
+	private void iris$beforeDrawSun(Matrix4f pLevelRenderer0, Matrix4f pMatrix4f1, float pFloat2, Camera pCamera3, boolean pBoolean4, Runnable pRunnable5, CallbackInfo ci) {
 		if (!Iris.getPipelineManager().getPipeline().map(WorldRenderingPipeline::shouldRenderSun).orElse(true)) {
 			iris$emptyBuilder();
 		}
@@ -54,7 +54,7 @@ public class MixinLevelRenderer_SunMoonToggle {
 			from = @At(value = "FIELD", target = "net/minecraft/client/renderer/LevelRenderer.MOON_LOCATION : Lnet/minecraft/resources/ResourceLocation;"),
 			to = @At(value = "INVOKE", target = "net/minecraft/client/multiplayer/ClientLevel.getStarBrightness (F)F")),
 		allow = 1)
-	private void iris$beforeDrawMoon(PoseStack arg, Matrix4f arg2, float f, Camera arg3, boolean bl, Runnable runnable, CallbackInfo ci) {
+	private void iris$beforeDrawMoon(Matrix4f pLevelRenderer0, Matrix4f pMatrix4f1, float pFloat2, Camera pCamera3, boolean pBoolean4, Runnable pRunnable5, CallbackInfo ci) {
 		if (!Iris.getPipelineManager().getPipeline().map(WorldRenderingPipeline::shouldRenderMoon).orElse(true)) {
 			iris$emptyBuilder();
 		}

@@ -57,7 +57,7 @@ public class MixinGameRenderer {
 	}
 
 	@Inject(method = "renderLevel", at = @At("TAIL"))
-	private void iris$runColorSpace(float pGameRenderer0, long pLong1, PoseStack pPoseStack2, CallbackInfo ci) {
+	private void iris$runColorSpace(float pGameRenderer0, long pLong1, CallbackInfo ci) {
 		Iris.getPipelineManager().getPipeline().ifPresent(WorldRenderingPipeline::finalizeGameRendering);
 	}
 
@@ -130,7 +130,7 @@ public class MixinGameRenderer {
 
 	// TODO: getPositionColorLightmapShader
 
-	@Inject(method = "getPositionTexColorNormalShader", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "getRendertypeCloudsShader", at = @At("HEAD"), cancellable = true)
 	private static void iris$overridePositionTexColorNormalShader(CallbackInfoReturnable<ShaderInstance> cir) {
 		if (ShadowRenderer.ACTIVE) {
 			override(ShaderKey.SHADOW_CLOUDS, cir);
@@ -169,7 +169,6 @@ public class MixinGameRenderer {
 
 	@Inject(method = {
 		"getRendertypeTranslucentShader",
-		"getRendertypeTranslucentNoCrumblingShader",
 		"getRendertypeTranslucentMovingBlockShader",
 		"getRendertypeTripwireShader"
 	}, at = @At("HEAD"), cancellable = true)

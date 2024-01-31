@@ -4,6 +4,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,6 +35,7 @@ import io.github.coolcrabs.brachyura.util.JvmUtil;
 import io.github.coolcrabs.brachyura.util.Lazy;
 import io.github.coolcrabs.brachyura.util.Util;
 import net.fabricmc.mappingio.MappingReader;
+import net.fabricmc.mappingio.adapter.MappingNsRenamer;
 import net.fabricmc.mappingio.format.MappingFormat;
 import net.fabricmc.mappingio.tree.MappingTree;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
@@ -45,8 +47,8 @@ import org.eclipse.jgit.lib.Constants;
 public class Buildscript extends SimpleFabricProject {
 	static final boolean SODIUM = true;
 	static final boolean CUSTOM_SODIUM = true;
-	static final String MC_VERSION = "23w51b";
-	static final String customSodiumName = "sodium-fabric-mc23w51a-0.5.5+git.d8a1fda-dirty.jar";
+	static final String MC_VERSION = "24w05a";
+	static final String customSodiumName = "sodium-fabric-0.5.7-snapshot+mc24w05a-local.jar";
 
 	private static final String[] SOURCE_SETS = new String[] {
 		"main",
@@ -71,7 +73,7 @@ public class Buildscript extends SimpleFabricProject {
 
 	@Override
 	public FabricLoader getLoader() {
-		return new FabricLoader(FabricMaven.URL, FabricMaven.loader("0.15.3"));
+		return new FabricLoader(FabricMaven.URL, FabricMaven.loader("0.15.6"));
 	}
 
 	@Override

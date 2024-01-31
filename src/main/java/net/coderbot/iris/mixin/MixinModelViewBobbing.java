@@ -1,10 +1,10 @@
 package net.coderbot.iris.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.minecraft.client.renderer.GameRenderer;
+import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,13 +25,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class MixinModelViewBobbing {
 	@Unique
-	private Matrix4f bobbingEffectsModel;
+	private Matrix4fc bobbingEffectsModel;
 
 	@Unique
 	private boolean areShadersOn;
 
 	@Inject(method = "renderLevel", at = @At("HEAD"))
-	private void iris$saveShadersOn(float pGameRenderer0, long pLong1, PoseStack pPoseStack2, CallbackInfo ci) {
+	private void iris$saveShadersOn(float pGameRenderer0, long pLong1, CallbackInfo ci) {
 		areShadersOn = IrisApi.getInstance().isShaderPackInUse();
 	}
 
@@ -49,27 +49,28 @@ public class MixinModelViewBobbing {
 
 	@Redirect(method = "renderLevel",
 			at = @At(value = "INVOKE",
-					target = "Lcom/mojang/blaze3d/vertex/PoseStack;last()Lcom/mojang/blaze3d/vertex/PoseStack$Pose;"),
+					target = "Lorg/joml/Matrix4f;mul(Lorg/joml/Matrix4fc;)Lorg/joml/Matrix4f;"),
 			slice = @Slice(from = @At(value = "INVOKE",
 					       target = "Lnet/minecraft/client/renderer/GameRenderer;bobHurt(Lcom/mojang/blaze3d/vertex/PoseStack;F)V"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;resetProjectionMatrix(Lorg/joml/Matrix4f;)V")))
-	private PoseStack.Pose iris$saveBobbing(PoseStack stack) {
-		if (!areShadersOn) return stack.last();
+	private Matrix4f iris$saveBobbing(Matrix4f instance, Matrix4fc right) {
+		if (!areShadersOn) instance.mul(right);
 
-		bobbingEffectsModel = new Matrix4f(stack.last().pose());
+		bobbingEffectsModel = right;
 
-		stack.popPose();
-
-		return stack.last();
+		return instance;
 	}
 
-	@Inject(method = "renderLevel",
+	@Redirect(method = "renderLevel",
 			at = @At(value = "INVOKE",
-					target = "Lnet/minecraft/client/renderer/GameRenderer;resetProjectionMatrix(Lorg/joml/Matrix4f;)V"))
-	private void iris$applyBobbingToModelView(float tickDelta, long limitTime, PoseStack matrix, CallbackInfo ci) {
-		if (!areShadersOn) return;
+					target = "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"))
+	private Matrix4f iris$applyBobbingToModelView(Matrix4f instance, float angleX, float angleY, float angleZ) {
+		instance.rotationXYZ(angleX, angleY, angleZ);
 
-		matrix.last().pose().mul(bobbingEffectsModel);
+		if (!areShadersOn) return instance;
+
+		instance.mul(bobbingEffectsModel);
 
 		bobbingEffectsModel = null;
+		return instance;
 	}
 }

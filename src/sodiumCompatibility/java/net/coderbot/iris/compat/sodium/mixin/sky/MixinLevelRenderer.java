@@ -45,7 +45,7 @@ public class MixinLevelRenderer {
 	 * ways the fog can be reduced in {@link FogRenderer#setupFog}.</p>
 	 */
 	@Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
-	private void preRenderSky(PoseStack poseStack, Matrix4f projectionMatrix, float f, Camera camera, boolean bl, Runnable runnable, CallbackInfo ci) {
+	private void preRenderSky(Matrix4f pLevelRenderer0, Matrix4f pMatrix4f1, float pFloat2, Camera camera, boolean pBoolean4, Runnable pRunnable5, CallbackInfo ci) {
 		if (!Iris.getCurrentPack().isPresent()) {
 			Vec3 cameraPosition = camera.getPosition();
 			Entity cameraEntity = camera.getEntity();

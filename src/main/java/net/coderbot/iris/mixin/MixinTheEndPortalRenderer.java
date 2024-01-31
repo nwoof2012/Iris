@@ -39,7 +39,7 @@ public class MixinTheEndPortalRenderer {
 		return 0.375F;
 	}
 
-	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "render(Lnet/minecraft/world/level/block/entity/TheEndPortalBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V", at = @At("HEAD"), cancellable = true)
 	public void iris$onRender(TheEndPortalBlockEntity entity, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, int light, int overlay, CallbackInfo ci) {
 		if (!Iris.getCurrentPack().isPresent()) {
 			return;
@@ -51,8 +51,6 @@ public class MixinTheEndPortalRenderer {
 		VertexConsumer vertexConsumer =
 				multiBufferSource.getBuffer(RenderType.entitySolid(TheEndPortalRenderer.END_PORTAL_LOCATION));
 
-		Matrix4f pose = poseStack.last().pose();
-		Matrix3f normal = poseStack.last().normal();
 
 		// animation with a period of 100 seconds.
 		// note that texture coordinates are wrapping, not clamping.
@@ -60,37 +58,37 @@ public class MixinTheEndPortalRenderer {
 		float topHeight = getOffsetUp();
 		float bottomHeight = getOffsetDown();
 
-		quad(entity, vertexConsumer, pose, normal, Direction.UP, progress, overlay, light,
+		quad(entity, vertexConsumer, poseStack, Direction.UP, progress, overlay, light,
 				0.0f, topHeight, 1.0f,
 				1.0f, topHeight, 1.0f,
 				1.0f, topHeight, 0.0f,
 				0.0f, topHeight, 0.0f);
 
-		quad(entity, vertexConsumer, pose, normal, Direction.DOWN, progress, overlay, light,
+		quad(entity, vertexConsumer, poseStack, Direction.DOWN, progress, overlay, light,
 				0.0f, bottomHeight, 1.0f,
 				0.0f, bottomHeight, 0.0f,
 				1.0f, bottomHeight, 0.0f,
 				1.0f, bottomHeight, 1.0f);
 
-		quad(entity, vertexConsumer, pose, normal, Direction.NORTH, progress, overlay, light,
+		quad(entity, vertexConsumer, poseStack, Direction.NORTH, progress, overlay, light,
 				0.0f, topHeight, 0.0f,
 				1.0f, topHeight, 0.0f,
 				1.0f, bottomHeight, 0.0f,
 				0.0f, bottomHeight, 0.0f);
 
-		quad(entity, vertexConsumer, pose, normal, Direction.WEST, progress, overlay, light,
+		quad(entity, vertexConsumer, poseStack, Direction.WEST, progress, overlay, light,
 				0.0f, topHeight, 1.0f,
 				0.0f, topHeight, 0.0f,
 				0.0f, bottomHeight, 0.0f,
 				0.0f, bottomHeight, 1.0f);
 
-		quad(entity, vertexConsumer, pose, normal, Direction.SOUTH, progress, overlay, light,
+		quad(entity, vertexConsumer, poseStack, Direction.SOUTH, progress, overlay, light,
 				0.0f, topHeight, 1.0f,
 				0.0f, bottomHeight, 1.0f,
 				1.0f, bottomHeight, 1.0f,
 				1.0f, topHeight, 1.0f);
 
-		quad(entity, vertexConsumer, pose, normal, Direction.EAST, progress, overlay, light,
+		quad(entity, vertexConsumer, poseStack, Direction.EAST, progress, overlay, light,
 				1.0f, topHeight, 1.0f,
 				1.0f, bottomHeight, 1.0f,
 				1.0f, bottomHeight, 0.0f,
@@ -98,7 +96,7 @@ public class MixinTheEndPortalRenderer {
 	}
 
 	@Unique
-	private void quad(TheEndPortalBlockEntity entity, VertexConsumer vertexConsumer, Matrix4f pose, Matrix3f normal,
+	private void quad(TheEndPortalBlockEntity entity, VertexConsumer vertexConsumer, PoseStack poseStack,
 					  Direction direction, float progress, int overlay, int light,
 					  float x1, float y1, float z1,
 					  float x2, float y2, float z2,
@@ -112,20 +110,22 @@ public class MixinTheEndPortalRenderer {
 		float ny = direction.getStepY();
 		float nz = direction.getStepZ();
 
+		PoseStack.Pose pose = poseStack.last();
+
 		vertexConsumer.vertex(pose, x1, y1, z1).color(RED, GREEN, BLUE, 1.0f)
 				.uv(0.0F + progress, 0.0F + progress).overlayCoords(overlay).uv2(light)
-				.normal(normal, nx, ny, nz).endVertex();
+				.normal(pose, nx, ny, nz).endVertex();
 
 		vertexConsumer.vertex(pose, x2, y2, z2).color(RED, GREEN, BLUE, 1.0f)
 				.uv(0.0F + progress, 0.2F + progress).overlayCoords(overlay).uv2(light)
-				.normal(normal, nx, ny, nz).endVertex();
+				.normal(pose, nx, ny, nz).endVertex();
 
 		vertexConsumer.vertex(pose, x3, y3, z3).color(RED, GREEN, BLUE, 1.0f)
 				.uv(0.2F + progress, 0.2F + progress).overlayCoords(overlay).uv2(light)
-				.normal(normal, nx, ny, nz).endVertex();
+				.normal(pose, nx, ny, nz).endVertex();
 
 		vertexConsumer.vertex(pose, x4, y4, z4).color(RED, GREEN, BLUE, 1.0f)
 				.uv(0.2F + progress, 0.0F + progress).overlayCoords(overlay).uv2(light)
-				.normal(normal, nx, ny, nz).endVertex();
+				.normal(pose, nx, ny, nz).endVertex();
 	}
 }

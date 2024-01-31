@@ -40,7 +40,7 @@ public class MixinLevelRenderer {
 	private Groupable groupable;
 
 	@Inject(method = "renderLevel", at = @At("HEAD"))
-	private void batchedentityrendering$beginLevelRender(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void batchedentityrendering$beginLevelRender(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		if (renderBuffers instanceof DrawCallTrackingRenderBuffers) {
 			((DrawCallTrackingRenderBuffers) renderBuffers).resetDrawCounts();
 		}
@@ -54,21 +54,21 @@ public class MixinLevelRenderer {
 	}
 
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = RENDER_ENTITY))
-	private void batchedentityrendering$preRenderEntity(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void batchedentityrendering$preRenderEntity(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		if (groupable != null) {
 			groupable.startGroup();
 		}
 	}
 
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = RENDER_ENTITY, shift = At.Shift.AFTER))
-	private void batchedentityrendering$postRenderEntity(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void batchedentityrendering$postRenderEntity(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		if (groupable != null) {
 			groupable.endGroup();
 		}
 	}
 
 	@Inject(method = "renderLevel", at = @At(value = "CONSTANT", args = "stringValue=translucent"), locals = LocalCapture.CAPTURE_FAILHARD)
-	private void batchedentityrendering$beginTranslucents(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void batchedentityrendering$beginTranslucents(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		if (renderBuffers.bufferSource() instanceof FullyBufferedMultiBufferSource fullyBufferedMultiBufferSource) {
 			fullyBufferedMultiBufferSource.readyUp();
 		}
@@ -89,14 +89,14 @@ public class MixinLevelRenderer {
 
 
 	@Inject(method = "renderLevel", at = @At(value = "CONSTANT", args = "stringValue=translucent", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
-	private void batchedentityrendering$endTranslucents(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void batchedentityrendering$endTranslucents(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		if (BlockRenderingSettings.INSTANCE.shouldSeparateEntityDraws()) {
 			this.renderBuffers.bufferSource().endBatch();
 		}
 	}
 
 	@Inject(method = "renderLevel", at = @At("RETURN"))
-	private void batchedentityrendering$endLevelRender(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void batchedentityrendering$endLevelRender(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		((RenderBuffersExt) renderBuffers).endLevelRendering();
 		groupable = null;
 	}

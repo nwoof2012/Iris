@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -304,7 +305,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 			);
 
 			showHideButton.setTooltip(Tooltip.create(showOrHide));
-			showHideButton.setTooltipDelay(10);
+			showHideButton.setTooltipDelay(Duration.ofSeconds(10));
 
 			this.addRenderableWidget(showHideButton);
 		}

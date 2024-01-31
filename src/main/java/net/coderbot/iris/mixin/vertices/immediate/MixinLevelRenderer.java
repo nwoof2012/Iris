@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = LevelRenderer.class, priority = 999)
 public class MixinLevelRenderer {
 	@Inject(method = "renderLevel", at = @At("HEAD"))
-	private void iris$immediateStateBeginLevelRender(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f matrix4f, CallbackInfo ci) {
+	private void iris$immediateStateBeginLevelRender(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		ImmediateState.isRenderingLevel = true;
 	}
 
 	@Inject(method = "renderLevel", at = @At("RETURN"))
-	private void iris$immediateStateEndLevelRender(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f matrix4f, CallbackInfo ci) {
+	private void iris$immediateStateEndLevelRender(float pLevelRenderer0, long pLong1, boolean pBoolean2, Camera pCamera3, GameRenderer pGameRenderer4, LightTexture pLightTexture5, Matrix4f pMatrix4f6, Matrix4f pMatrix4f7, CallbackInfo ci) {
 		ImmediateState.isRenderingLevel = false;
 	}
 }
