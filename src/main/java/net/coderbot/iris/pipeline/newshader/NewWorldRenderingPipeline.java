@@ -1229,8 +1229,8 @@ public class NewWorldRenderingPipeline implements WorldRenderingPipeline, CoreWo
 
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
 
-		renderTargets.destroy();
 		DHCompat.clearPipeline();
+		renderTargets.destroy();
 
 		customImages.forEach(GlImage::destroy);
 
