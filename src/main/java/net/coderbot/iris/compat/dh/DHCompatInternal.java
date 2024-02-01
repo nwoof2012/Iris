@@ -1,24 +1,26 @@
 package net.coderbot.iris.compat.dh;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.seibel.distanthorizons.core.api.internal.ClientApi;
-import com.seibel.distanthorizons.core.util.RenderUtil;
-import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
+import com.seibel.distanthorizons.api.DhApi;
+import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiFramebuffer;
+import com.seibel.distanthorizons.coreapi.DependencyInjection.OverrideInjector;
 import com.seibel.distanthorizons.coreapi.util.math.Vec3f;
-import loaderCommon.fabric.com.seibel.distanthorizons.common.wrappers.McObjectConverter;
-import loaderCommon.fabric.com.seibel.distanthorizons.common.wrappers.world.ClientLevelWrapper;
 import net.coderbot.iris.Iris;
+import net.coderbot.iris.gl.IrisRenderSystem;
 import net.coderbot.iris.gl.buffer.ShaderStorageBuffer;
 import net.coderbot.iris.gl.framebuffer.GlFramebuffer;
 import net.coderbot.iris.gl.texture.DepthBufferFormat;
+import net.coderbot.iris.gl.texture.DepthCopyStrategy;
 import net.coderbot.iris.pipeline.ShadowRenderer;
 import net.coderbot.iris.pipeline.newshader.NewWorldRenderingPipeline;
 import net.coderbot.iris.rendertarget.DepthTexture;
 import net.coderbot.iris.shaderpack.ProgramSource;
 import net.coderbot.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
+import org.lwjgl.opengl.GL20C;
 
-public class DHCompatInternal {
+public class DHCompatInternal
+{
 	public static DHCompatInternal INSTANCE = new DHCompatInternal();
 	public boolean shouldOverrideShadow;
 
@@ -26,12 +28,17 @@ public class DHCompatInternal {
 	private IrisLodRenderProgram translucentProgram;
 	private IrisLodRenderProgram shadowProgram;
 	private GlFramebuffer dhTerrainFramebuffer;
+	private DhFrameBufferWrapper dhTerrainFramebufferWrapper;
 	private GlFramebuffer dhWaterFramebuffer;
 	private GlFramebuffer dhShadowFramebuffer;
+	private DhFrameBufferWrapper dhShadowFramebufferWrapper;
 	private DepthTexture depthTexNoTranslucent;
+	private boolean translucentDepthDirty;
 
 	private int storedDepthTex;
 	public boolean shouldOverride;
+
+
 
 	public void prepareNewPipeline(NewWorldRenderingPipeline pipeline, boolean dhShadowEnabled) {
 		if (solidProgram != null) {
@@ -72,6 +79,7 @@ public class DHCompatInternal {
 			shadowProgram = IrisLodRenderProgram.createProgram(shadow.getName(), true, false, shadow, pipeline.getCustomUniforms(), pipeline);
 			if (pipeline.hasShadowRenderTargets()) {
 				dhShadowFramebuffer = pipeline.createDHFramebufferShadow(shadow);
+				dhShadowFramebufferWrapper = new DhFrameBufferWrapper(dhShadowFramebuffer);
 			}
 			shouldOverrideShadow = true;
 		} else {
@@ -79,6 +87,7 @@ public class DHCompatInternal {
 		}
 
 		dhTerrainFramebuffer = pipeline.createDHFramebuffer(terrain, false);
+		dhTerrainFramebufferWrapper = new DhFrameBufferWrapper(dhTerrainFramebuffer);
 
 		if (translucentProgram == null) {
 			translucentProgram = solidProgram;
@@ -103,21 +112,25 @@ public class DHCompatInternal {
 			depthTexNoTranslucent = null;
 		}
 
+		translucentDepthDirty = true;
+
 		depthTexNoTranslucent = new DepthTexture(width, height, DepthBufferFormat.DEPTH32F);
 	}
 
 	public void renderShadowSolid() {
-		ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(Minecraft.getInstance().level),
-			McObjectConverter.Convert(ShadowRenderer.MODELVIEW),
-			McObjectConverter.Convert(ShadowRenderer.PROJECTION),
-			CapturedRenderingState.INSTANCE.getTickDelta());
+		// FIXME doesn't appear to do anything
+		//ClientApi.INSTANCE.renderLods(ClientLevelWrapper.getWrapper(Minecraft.getInstance().level),
+		//	McObjectConverter.Convert(ShadowRenderer.MODELVIEW),
+		//	McObjectConverter.Convert(ShadowRenderer.PROJECTION),
+		//	CapturedRenderingState.INSTANCE.getTickDelta());
 	}
 
 	public void renderShadowTranslucent() {
-		ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(Minecraft.getInstance().level),
-			McObjectConverter.Convert(ShadowRenderer.MODELVIEW),
-			McObjectConverter.Convert(ShadowRenderer.PROJECTION),
-			CapturedRenderingState.INSTANCE.getTickDelta());
+		// FIXME doesn't appear to do anything
+		//ClientApi.INSTANCE.renderDeferredLods(ClientLevelWrapper.getWrapper(Minecraft.getInstance().level),
+		//	McObjectConverter.Convert(ShadowRenderer.MODELVIEW),
+		//	McObjectConverter.Convert(ShadowRenderer.PROJECTION),
+		//	CapturedRenderingState.INSTANCE.getTickDelta());
 	}
 
 	public void clear() {
@@ -139,6 +152,12 @@ public class DHCompatInternal {
 		dhWaterFramebuffer = null;
 		dhShadowFramebuffer = null;
 		storedDepthTex = -1;
+		translucentDepthDirty = true;
+
+		OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, dhTerrainFramebufferWrapper);
+		OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, dhShadowFramebufferWrapper);
+		dhTerrainFramebufferWrapper = null;
+		dhShadowFramebufferWrapper = null;
 	}
 
 	public void setModelPos(Vec3f modelPos) {
@@ -156,6 +175,9 @@ public class DHCompatInternal {
 	public GlFramebuffer getSolidFB() {
 		return dhTerrainFramebuffer;
 	}
+	public DhFrameBufferWrapper getSolidFBWrapper() {
+		return dhTerrainFramebufferWrapper;
+	}
 
 	public IrisLodRenderProgram getShadowShader() {
 		return shadowProgram;
@@ -163,6 +185,9 @@ public class DHCompatInternal {
 
 	public GlFramebuffer getShadowFB() {
 		return dhShadowFramebuffer;
+	}
+	public DhFrameBufferWrapper getShadowFBWrapper() {
+		return dhShadowFramebufferWrapper;
 	}
 
 	public IrisLodRenderProgram getTranslucentShader() {
@@ -177,15 +202,35 @@ public class DHCompatInternal {
 	}
 
 	public int getRenderDistance() {
-		return RenderUtil.getFarClipPlaneDistanceInBlocks();
+		return getDhBlockRenderDistance();
+	}
+	public static int getDhBlockRenderDistance() {
+		if (DhApi.Delayed.configs == null)
+		{
+			// Called before DH has finished setup
+			return 0;
+		}
+
+		return DhApi.Delayed.configs.graphics().chunkRenderDistance().getValue() * 16;
+	}
+
+	public void copyTranslucents(int width, int height) {
+		if (translucentDepthDirty) {
+			translucentDepthDirty = false;
+			RenderSystem.bindTexture(depthTexNoTranslucent.getTextureId());
+			dhTerrainFramebuffer.bindAsReadBuffer();
+			IrisRenderSystem.copyTexImage2D(GL20C.GL_TEXTURE_2D, 0, DepthBufferFormat.DEPTH32F.getGlInternalFormat(), 0, 0, width, height, 0);
+		} else {
+			DepthCopyStrategy.fastest(false).copy(dhTerrainFramebuffer, storedDepthTex, null, depthTexNoTranslucent.getTextureId(), width, height);
+		}
 	}
 
 	public float getFarPlane() {
-		return (float)((double)(RenderUtil.getFarClipPlaneDistanceInBlocks() + 512) * Math.sqrt(2.0));
+		return (float)((double)(getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
 	}
 
 	public float getNearPlane() {
-		return RenderUtil.getNearClipPlaneDistanceInBlocks(CapturedRenderingState.INSTANCE.getTickDelta());
+		return DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(CapturedRenderingState.INSTANCE.getTickDelta());
 	}
 
 	public GlFramebuffer getTranslucentFB() {
@@ -197,4 +242,5 @@ public class DHCompatInternal {
 
 		return depthTexNoTranslucent.getTextureId();
 	}
+
 }
