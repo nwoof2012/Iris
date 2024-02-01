@@ -60,10 +60,18 @@ public class DHCompatInternal
 			shadowProgram = null;
 		}
 
+		if (depthTexNoTranslucent != null) {
+			depthTexNoTranslucent.destroy();
+			depthTexNoTranslucent = null;
+		}
+
 		if (pipeline.getDHTerrainShader().isEmpty() && pipeline.getDHWaterShader().isEmpty()) {
 			Iris.logger.warn("No DH shader found in this pack.");
 			return;
 		}
+
+		createDepthTex(Minecraft.getInstance().getMainRenderTarget().width, Minecraft.getInstance().getMainRenderTarget().height);
+		translucentDepthDirty = true;
 
 		ProgramSource terrain = pipeline.getDHTerrainShader().get();
 		solidProgram = IrisLodRenderProgram.createProgram(terrain.getName(), false, false, terrain, pipeline.getCustomUniforms(), pipeline);
