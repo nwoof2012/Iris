@@ -3,10 +3,7 @@ package net.coderbot.iris.compat.dh;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.coreapi.util.math.Vec3f;
-import me.jellysquid.mods.sodium.client.gl.shader.uniform.GlUniformFloat3v;
-import me.jellysquid.mods.sodium.client.gl.shader.uniform.GlUniformMatrix4f;
 import net.coderbot.iris.Iris;
-import net.coderbot.iris.compat.sodium.impl.shader_overrides.GlUniformMatrix3f;
 import net.coderbot.iris.gbuffer_overrides.matching.InputAvailability;
 import net.coderbot.iris.gl.IrisRenderSystem;
 import net.coderbot.iris.gl.blending.BlendModeOverride;
@@ -23,12 +20,10 @@ import net.coderbot.iris.pipeline.transform.PatchShaderType;
 import net.coderbot.iris.pipeline.transform.TransformPatcher;
 import net.coderbot.iris.samplers.IrisSamplers;
 import net.coderbot.iris.shaderpack.ProgramSource;
-import net.coderbot.iris.uniforms.CapturedRenderingState;
 import net.coderbot.iris.uniforms.CommonUniforms;
 import net.coderbot.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.coderbot.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.client.Minecraft;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL32;
@@ -38,61 +33,27 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.FloatBuffer;
 import java.util.Map;
 
-public class IrisLodRenderProgram
-{
-	private final int id;
-
+public class IrisLodRenderProgram {
 	// Uniforms
 	public final int modelOffsetUniform;
 	public final int worldYOffsetUniform;
-
 	public final int mircoOffsetUniform;
 	public final int modelViewUniform;
 	public final int modelViewInverseUniform;
 	public final int projectionUniform;
 	public final int projectionInverseUniform;
 	public final int normalMatrix3fUniform;
-
 	// Fog/Clip Uniforms
 	public final int clipDistanceUniform;
+	private final int id;
 	private final ProgramUniforms uniforms;
 	private final CustomUniforms customUniforms;
 	private final ProgramSamplers samplers;
 	private final ProgramImages images;
 	private final BlendModeOverride blend;
 
-	public static IrisLodRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, NewWorldRenderingPipeline pipeline) {
-		Map<PatchShaderType, String> transformed = TransformPatcher.patchDH(
-			name,
-			source.getVertexSource().orElseThrow(RuntimeException::new),
-			source.getTessControlSource().orElse(null),
-			source.getTessEvalSource().orElse(null),
-			source.getGeometrySource().orElse(null),
-			source.getFragmentSource().orElseThrow(RuntimeException::new),
-			pipeline.getTextureMap());
-		String vertex = transformed.get(PatchShaderType.VERTEX);
-		String tessControl = transformed.get(PatchShaderType.TESS_CONTROL);
-		String tessEval = transformed.get(PatchShaderType.TESS_EVAL);
-		String geometry = transformed.get(PatchShaderType.GEOMETRY);
-		String fragment = transformed.get(PatchShaderType.FRAGMENT);
-		ShaderPrinter.printProgram(name)
-			.addSources(transformed)
-			.setName("dh_" + name)
-			.print();
-		return new IrisLodRenderProgram(name, isShadowPass, translucent, source.getDirectives().getBlendModeOverride().orElse(null), vertex, tessControl, tessEval, geometry, fragment, uniforms, pipeline);
-	}
-
-	public int tryGetUniformLocation2(CharSequence name) {
-		int i = GL32.glGetUniformLocation(this.id, name);
-		if (i == -1) Iris.logger.warn("Couldn't find " + name);
-		return i;
-	}
-
-	// Noise Uniforms
-
 	// This will bind  AbstractVertexAttribute
-	private IrisLodRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, NewWorldRenderingPipeline pipeline)
-	{
+	private IrisLodRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, NewWorldRenderingPipeline pipeline) {
 		id = GL43C.glCreateProgram();
 
 		GL32.glBindAttribLocation(this.id, 0, "vPosition");
@@ -167,6 +128,35 @@ public class IrisLodRenderProgram
 		clipDistanceUniform = tryGetUniformLocation2("clipDistance");
 	}
 
+	public static IrisLodRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, NewWorldRenderingPipeline pipeline) {
+		Map<PatchShaderType, String> transformed = TransformPatcher.patchDH(
+			name,
+			source.getVertexSource().orElseThrow(RuntimeException::new),
+			source.getTessControlSource().orElse(null),
+			source.getTessEvalSource().orElse(null),
+			source.getGeometrySource().orElse(null),
+			source.getFragmentSource().orElseThrow(RuntimeException::new),
+			pipeline.getTextureMap());
+		String vertex = transformed.get(PatchShaderType.VERTEX);
+		String tessControl = transformed.get(PatchShaderType.TESS_CONTROL);
+		String tessEval = transformed.get(PatchShaderType.TESS_EVAL);
+		String geometry = transformed.get(PatchShaderType.GEOMETRY);
+		String fragment = transformed.get(PatchShaderType.FRAGMENT);
+		ShaderPrinter.printProgram(name)
+			.addSources(transformed)
+			.setName("dh_" + name)
+			.print();
+		return new IrisLodRenderProgram(name, isShadowPass, translucent, source.getDirectives().getBlendModeOverride().orElse(null), vertex, tessControl, tessEval, geometry, fragment, uniforms, pipeline);
+	}
+
+	// Noise Uniforms
+
+	public int tryGetUniformLocation2(CharSequence name) {
+		int i = GL32.glGetUniformLocation(this.id, name);
+		if (i == -1) Iris.logger.warn("Couldn't find " + name);
+		return i;
+	}
+
 	public void setUniform(int index, Matrix4f matrix) {
 		if (index == -1 || matrix == null) return;
 
@@ -192,27 +182,23 @@ public class IrisLodRenderProgram
 	}
 
 	// Override ShaderProgram.bind()
-	public void bind()
-	{
+	public void bind() {
 		GL43C.glUseProgram(id);
 		if (blend != null) blend.apply();
 	}
 
-	public void unbind()
-	{
+	public void unbind() {
 		GL43C.glUseProgram(0);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
 		BlendModeOverride.restore();
 	}
 
-	public void free()
-	{
+	public void free() {
 		GL43C.glDeleteProgram(id);
 	}
 
-	public void  fillUniformData(Matrix4f projection, Matrix4f modelView, int worldYOffset, float partialTicks)
-	{
+	public void fillUniformData(Matrix4f projection, Matrix4f modelView, int worldYOffset, float partialTicks) {
 		GL43C.glUseProgram(id);
 
 		Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
@@ -245,8 +231,7 @@ public class IrisLodRenderProgram
 		GL43C.glUniform1f(index, value);
 	}
 
-	public void setModelPos(Vec3f modelPos)
-	{
+	public void setModelPos(Vec3f modelPos) {
 		setUniform(modelOffsetUniform, modelPos);
 	}
 

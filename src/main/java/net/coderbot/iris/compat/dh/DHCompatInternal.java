@@ -7,11 +7,9 @@ import com.seibel.distanthorizons.coreapi.DependencyInjection.OverrideInjector;
 import com.seibel.distanthorizons.coreapi.util.math.Vec3f;
 import net.coderbot.iris.Iris;
 import net.coderbot.iris.gl.IrisRenderSystem;
-import net.coderbot.iris.gl.buffer.ShaderStorageBuffer;
 import net.coderbot.iris.gl.framebuffer.GlFramebuffer;
 import net.coderbot.iris.gl.texture.DepthBufferFormat;
 import net.coderbot.iris.gl.texture.DepthCopyStrategy;
-import net.coderbot.iris.pipeline.ShadowRenderer;
 import net.coderbot.iris.pipeline.newshader.NewWorldRenderingPipeline;
 import net.coderbot.iris.rendertarget.DepthTexture;
 import net.coderbot.iris.shaderpack.ProgramSource;
@@ -19,12 +17,11 @@ import net.coderbot.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL20C;
 
-public class DHCompatInternal
-{
+public class DHCompatInternal {
 	public static DHCompatInternal INSTANCE = new DHCompatInternal();
 	public boolean shouldOverrideShadow;
-
-    private IrisLodRenderProgram solidProgram;
+	public boolean shouldOverride;
+	private IrisLodRenderProgram solidProgram;
 	private IrisLodRenderProgram translucentProgram;
 	private IrisLodRenderProgram shadowProgram;
 	private GlFramebuffer dhTerrainFramebuffer;
@@ -34,11 +31,16 @@ public class DHCompatInternal
 	private DhFrameBufferWrapper dhShadowFramebufferWrapper;
 	private DepthTexture depthTexNoTranslucent;
 	private boolean translucentDepthDirty;
-
 	private int storedDepthTex;
-	public boolean shouldOverride;
 
+	public static int getDhBlockRenderDistance() {
+		if (DhApi.Delayed.configs == null) {
+			// Called before DH has finished setup
+			return 0;
+		}
 
+		return DhApi.Delayed.configs.graphics().chunkRenderDistance().getValue() * 16;
+	}
 
 	public void prepareNewPipeline(NewWorldRenderingPipeline pipeline, boolean dhShadowEnabled) {
 		if (solidProgram != null) {
@@ -183,6 +185,7 @@ public class DHCompatInternal
 	public GlFramebuffer getSolidFB() {
 		return dhTerrainFramebuffer;
 	}
+
 	public DhFrameBufferWrapper getSolidFBWrapper() {
 		return dhTerrainFramebufferWrapper;
 	}
@@ -194,6 +197,7 @@ public class DHCompatInternal
 	public GlFramebuffer getShadowFB() {
 		return dhShadowFramebuffer;
 	}
+
 	public DhFrameBufferWrapper getShadowFBWrapper() {
 		return dhShadowFramebufferWrapper;
 	}
@@ -212,15 +216,6 @@ public class DHCompatInternal
 	public int getRenderDistance() {
 		return getDhBlockRenderDistance();
 	}
-	public static int getDhBlockRenderDistance() {
-		if (DhApi.Delayed.configs == null)
-		{
-			// Called before DH has finished setup
-			return 0;
-		}
-
-		return DhApi.Delayed.configs.graphics().chunkRenderDistance().getValue() * 16;
-	}
 
 	public void copyTranslucents(int width, int height) {
 		if (translucentDepthDirty) {
@@ -234,7 +229,7 @@ public class DHCompatInternal
 	}
 
 	public float getFarPlane() {
-		return (float)((double)(getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
+		return (float) ((double) (getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
 	}
 
 	public float getNearPlane() {

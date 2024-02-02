@@ -4,7 +4,6 @@ import net.coderbot.iris.block_rendering.BlockRenderingSettings;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
@@ -13,10 +12,20 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(targets = "net/fabricmc/fabric/impl/client/indigo/renderer/render/AbstractBlockRenderContext", remap = false)
 @Pseudo
 public class MixinAbstractBlockRenderContext {
+	// Copied from ColorHelper from Indigo, licensed under the Apache v2 license.
+	private static int iris$multiplyRGB(int color, float shade) {
+		final int alpha = ((color >> 24) & 0xFF);
+		final int red = (int) (((color >> 16) & 0xFF) * shade);
+		final int green = (int) (((color >> 8) & 0xFF) * shade);
+		final int blue = (int) ((color & 0xFF) * shade);
+
+		return (alpha << 24) | (red << 16) | (green << 8) | blue;
+	}
+
 	// One of these injections must pass, or else the game will crash.
 	@Redirect(method = {"shadeQuad", "shadeFlatQuad"},
-	          at = @At(value = "INVOKE",
-	                   target = "Lnet/fabricmc/fabric/impl/client/indigo/renderer/helper/ColorHelper;multiplyRGB(IF)I"), require = 0)
+		at = @At(value = "INVOKE",
+			target = "Lnet/fabricmc/fabric/impl/client/indigo/renderer/helper/ColorHelper;multiplyRGB(IF)I"), require = 0)
 	private int iris$separateAoColorMultiply(int color, float ao) {
 		if (BlockRenderingSettings.INSTANCE.shouldUseSeparateAo()) {
 			color &= 0x00FFFFFF;
@@ -26,15 +35,5 @@ public class MixinAbstractBlockRenderContext {
 		} else {
 			return iris$multiplyRGB(color, ao);
 		}
-	}
-
-	// Copied from ColorHelper from Indigo, licensed under the Apache v2 license.
-	private static int iris$multiplyRGB(int color, float shade) {
-		final int alpha = ((color >> 24) & 0xFF);
-		final int red = (int) (((color >> 16) & 0xFF) * shade);
-		final int green = (int) (((color >> 8) & 0xFF) * shade);
-		final int blue = (int) ((color & 0xFF) * shade);
-
-		return (alpha << 24) | (red << 16) | (green << 8) | blue;
 	}
 }

@@ -90,7 +90,7 @@ public class ShadowRenderer {
 	private final String debugStringOverall;
 	private FrustumHolder terrainFrustumHolder;
 	private FrustumHolder entityFrustumHolder;
-	private boolean renderDhShadow;
+	public static boolean RENDER_DH_SHADOW;
 	private String debugStringTerrain = "(unavailable)";
 	private int renderedShadowEntities = 0;
 	private int renderedShadowBlockEntities = 0;
@@ -129,7 +129,7 @@ public class ShadowRenderer {
 		this.fov = shadowDirectives.getFov();
 		this.targets = shadowRenderTargets;
 
-		this.renderDhShadow = shadowDirectives.isDhShadowEnabled().orElse(true);
+		this.RENDER_DH_SHADOW = shadowDirectives.isDhShadowEnabled().orElse(true);
 
 		if (shadow != null) {
 			// Assume that the shader pack is doing voxelization if a geometry shader is detected.
@@ -537,7 +537,7 @@ public class ShadowRenderer {
 		// It doesn't matter a ton, since this just means that they won't be sorted in the normal rendering pass.
 		// Just something to watch out for, however...
 		if (shouldRenderTranslucent) {
-			if (renderDhShadow) {
+			if (RENDER_DH_SHADOW) {
 				DHCompat.renderShadowTranslucent();
 			}
 
