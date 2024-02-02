@@ -20,6 +20,7 @@ import net.coderbot.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.api.v0.IrisApi;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL43C;
+import org.lwjgl.opengl.GL46C;
 
 public class LodRendererEvents
 {
@@ -258,20 +259,17 @@ public class LodRendererEvents
 				{
 					DhApi.Delayed.configs.graphics().ambientOcclusion().enabled().setValue(false);
 					DhApi.Delayed.configs.graphics().fog().drawMode().setValue(EFogDrawMode.FOG_DISABLED);
+
+					if (event.value.renderPass == EDhApiRenderPass.OPAQUE_AND_TRANSPARENT)
+					{
+						Iris.logger.error("Unexpected; somehow the Opaque + Translucent pass ran with shaders on.");
+					}
 				}
 				else
 				{
 					DhApi.Delayed.configs.graphics().ambientOcclusion().enabled().clearValue();
 					DhApi.Delayed.configs.graphics().fog().drawMode().clearValue();
 				}
-
-
-
-				if (event.value.renderPass == EDhApiRenderPass.OPAQUE_AND_TRANSPARENT)
-				{
-					Iris.logger.error("Unexpected ");
-				}
-
 
 
 				// cleanup
@@ -347,8 +345,7 @@ public class LodRendererEvents
 						Matrix4f projection = CapturedRenderingState.INSTANCE.getGbufferProjection();
 						//float nearClip = DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(partialTicks);
 						//float farClip = (float) ((double) (DHCompatInternal.getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
-						RenderSystem.disableCull();
-
+						GL46C.glDisable(GL46C.GL_CULL_FACE);
 						//Iris.logger.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
 						//	" \niris near clip: "+nearClip+" iris far clip: "+farClip);
 

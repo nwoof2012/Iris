@@ -32,7 +32,7 @@ public class DHCompat
 	private static MethodHandle renderShadowSolid;
 	private static MethodHandle renderShadowTranslucent;
 
-	static
+	public static void run()
 	{
 		try
 		{
