@@ -66,6 +66,8 @@ public class ShadowRenderer {
 	public static int renderDistance;
 
     private final float halfPlaneLength;
+    private final float nearPlane;
+    private final float farPlane;
 	private final float voxelDistance;
 	private final float renderDistanceMultiplier;
 	private final float entityShadowDistanceMultiplier;
@@ -109,6 +111,8 @@ public class ShadowRenderer {
 		final PackShadowDirectives shadowDirectives = directives.getShadowDirectives();
 
 		this.halfPlaneLength = shadowDirectives.getDistance();
+		this.nearPlane = shadowDirectives.getNearPlane();
+		this.farPlane = shadowDirectives.getFarPlane();
 		this.voxelDistance = shadowDirectives.getVoxelDistance();
 		this.renderDistanceMultiplier = shadowDirectives.getDistanceRenderMul();
 		this.entityShadowDistanceMultiplier = shadowDirectives.getEntityShadowDistanceMul();
@@ -448,7 +452,7 @@ public class ShadowRenderer {
 			// If FOV is not null, the pack wants a perspective based projection matrix. (This is to support legacy packs)
 			shadowProjection = ShadowMatrices.createPerspectiveMatrix(this.fov);
 		} else {
-			shadowProjection = ShadowMatrices.createOrthoMatrix(halfPlaneLength);
+			shadowProjection = ShadowMatrices.createOrthoMatrix(halfPlaneLength, nearPlane < 0 ? -DHCompat.getRenderDistance() : nearPlane, farPlane < 0 ? DHCompat.getRenderDistance() : farPlane);
 		}
 
 		PROJECTION = shadowProjection;
