@@ -3,7 +3,9 @@ package net.coderbot.iris.compat.dh;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiRenderPass;
 import com.seibel.distanthorizons.api.enums.rendering.EFogDrawMode;
+import com.seibel.distanthorizons.api.interfaces.override.IDhApiOverrideable;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiFramebuffer;
+import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiShadowCullingFrustum;
 import com.seibel.distanthorizons.api.methods.events.abstractEvents.DhApiAfterDhInitEvent;
 import com.seibel.distanthorizons.api.methods.events.abstractEvents.DhApiBeforeApplyShaderRenderEvent;
 import com.seibel.distanthorizons.api.methods.events.abstractEvents.DhApiBeforeBufferRenderEvent;
@@ -201,6 +203,7 @@ public class LodRendererEvents {
 				if (DHCompatInternal.INSTANCE.shouldOverride) {
 					if (ShadowRenderingState.areShadowsCurrentlyBeingRendered() && DHCompatInternal.INSTANCE.shouldOverrideShadow) {
 						OverrideInjector.INSTANCE.bind(IDhApiFramebuffer.class, DHCompatInternal.INSTANCE.getShadowFBWrapper());
+						OverrideInjector.INSTANCE.bind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
 					} else {
 						OverrideInjector.INSTANCE.bind(IDhApiFramebuffer.class, DHCompatInternal.INSTANCE.getSolidFBWrapper());
 					}
@@ -316,6 +319,8 @@ public class LodRendererEvents {
 			@Override
 			public void beforeRender(DhApiCancelableEventParam<DhApiRenderParam> event) {
 				if (IrisApi.getInstance().isShaderPackInUse()) {
+					OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
+
 					event.cancelEvent();
 				}
 			}

@@ -229,11 +229,24 @@ public class DHCompatInternal {
 	}
 
 	public float getFarPlane() {
-		return (float) ((double) (getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
+		if (DhApi.Delayed.configs == null) {
+			// Called before DH has finished setup
+			return 0;
+		}
+
+		int lodChunkDist = DhApi.Delayed.configs.graphics().chunkRenderDistance().getValue();
+		int lodBlockDist = lodChunkDist * 16;
+		// sqrt 2 to prevent the corners from being cut off
+		return (float) ((lodBlockDist +  512) * Math.sqrt(2));
 	}
 
 	public float getNearPlane() {
-		return DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(CapturedRenderingState.INSTANCE.getTickDelta());
+		if (DhApi.Delayed.renderProxy == null) {
+			// Called before DH has finished setup
+			return 0;
+		}
+
+		return DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(CapturedRenderingState.INSTANCE.getRealTickDelta());
 	}
 
 	public GlFramebuffer getTranslucentFB() {
