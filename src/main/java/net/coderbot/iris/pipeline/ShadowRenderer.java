@@ -347,7 +347,7 @@ public class ShadowRenderer {
 					CapturedRenderingState.INSTANCE.getGbufferProjection(), shadowLightVectorFromOrigin, boxCuller, new BoxCuller(halfPlaneLength * renderMultiplier)), distanceInfo, cullingInfo);
 			} else {
 				return holder.setInfo(new AdvancedShadowCullingFrustum(CapturedRenderingState.INSTANCE.getGbufferModelView(),
-					CapturedRenderingState.INSTANCE.getGbufferProjection(), shadowLightVectorFromOrigin, boxCuller), distanceInfo, cullingInfo);
+					DHCompat.getProjection(), shadowLightVectorFromOrigin, boxCuller), distanceInfo, cullingInfo);
 			}
 		}
 

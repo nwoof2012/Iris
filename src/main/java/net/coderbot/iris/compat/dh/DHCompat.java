@@ -25,6 +25,10 @@ public class DHCompat {
 	private static MethodHandle renderShadowTranslucent;
 
 	public static Matrix4f getProjection() {
+		if (compatInternalInstance == null) {
+			return new Matrix4f(CapturedRenderingState.INSTANCE.getGbufferProjection());
+		}
+
 		Matrix4f projection = new Matrix4f(CapturedRenderingState.INSTANCE.getGbufferProjection());
 		return new Matrix4f().setPerspective(projection.perspectiveFov(), projection.m11() / projection.m00(), DHCompat.getNearPlane(), DHCompat.getFarPlane());
 	}
