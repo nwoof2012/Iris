@@ -28,7 +28,7 @@ jobs:
       - name: Build with Brachyura
         run: java -Diris.release=true -jar brachyura-bootstrap-0.jar build
 
-      - name: Upload artifacts to Modrinth and GitHub
+      - name: Upload artifacts to GitHub
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: YL57xq9U
